@@ -1,0 +1,40 @@
+{
+  "name": "adjutant-voice-notify",
+  "displayName": "Adjutant Voice Notifications",
+  "description": "Speaks one sentence in a synthetic command-computer voice when a task, a long terminal command or a Claude Code turn finishes. Unofficial fan tool.",
+  "version": "0.1.13",
+  "publisher": "local",
+  "license": "MIT",
+  "engines": { "vscode": "^1.93.0" },
+  "categories": ["Other"],
+  "main": "./extension.js",
+  "activationEvents": ["onStartupFinished"],
+  "contributes": {
+    "commands": [
+      { "command": "adjutantVoice.test", "title": "Adjutant Voice: Test Voice" },
+      { "command": "adjutantVoice.installClaudeHook", "title": "Adjutant Voice: Install Claude Code Hook" },
+      { "command": "adjutantVoice.removeClaudeHook", "title": "Adjutant Voice: Remove Claude Code Hook" }
+    ],
+    "configuration": {
+      "title": "Adjutant Voice",
+      "properties": {
+        "adjutantVoice.enabled": { "type": "boolean", "default": true, "description": "Speak notifications." },
+        "adjutantVoice.tasks": { "type": "boolean", "default": true, "description": "Announce when a VS Code task finishes." },
+        "adjutantVoice.terminalCommands": { "type": "boolean", "default": true, "description": "Announce when a long terminal command finishes (needs terminal shell integration)." },
+        "adjutantVoice.minimumSeconds": { "type": "number", "default": 60, "minimum": 0, "description": "Only work that took at least this long is announced: tasks, terminal commands and Claude Code turns alike. 0 announces everything." },
+        "adjutantVoice.ignoreCommands": {
+          "type": "array", "items": { "type": "string" },
+          "default": ["claude", "vim", "nvim", "nano", "less", "man", "ssh", "top", "htop", "watch", "tail", "python", "python3", "node", "bash", "zsh", "fish"],
+          "description": "Programs whose end is not announced (interactive ones, mostly). Matched against the first word of the command."
+        },
+        "adjutantVoice.claude": { "type": "boolean", "default": true, "description": "Announce when Claude Code finishes a turn (needs the Claude Code hook; see the Install command)." },
+        "adjutantVoice.rephrase": { "type": "boolean", "default": true, "description": "Reword each notification before speaking so it is easier to make out through the voice effect. Sends the notification text to Claude through Claude Code and adds a few seconds." },
+        "adjutantVoice.rephraseModel": { "type": "string", "default": "haiku", "description": "The Claude model used for rewording." },
+        "adjutantVoice.claudePath": { "type": "string", "default": "", "description": "Path to the Claude Code program used for rewording. Empty looks for \"claude\"." },
+        "adjutantVoice.voiceLink": { "type": "string", "default": "", "description": "A link from the Adjutant Online page carrying voice settings. Empty uses the default voice." },
+        "adjutantVoice.cliPath": { "type": "string", "default": "", "description": "Path to the speaker program (dist-cli/say.js). Empty uses the path recorded when the extension was built." },
+        "adjutantVoice.nodePath": { "type": "string", "default": "node", "description": "The Node.js program used to run the speaker." }
+      }
+    }
+  }
+}

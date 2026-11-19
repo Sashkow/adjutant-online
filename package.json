@@ -1,0 +1,27 @@
+{
+  "name": "adjutant-online",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview",
+    "build:cli": "tsc --noEmit && vite build --config vite.cli.config.ts && vite build --config vite.live.config.ts",
+    "build:live": "tsc --noEmit && vite build --config vite.live.config.ts",
+    "build:vscode": "npm run build:cli && node -e \"require('fs').writeFileSync('vscode-extension/default-cli.json', JSON.stringify({ cli: require('path').resolve('dist-cli/say.js') }))\" && (cp ~/.claude/skills/clear-speech/SKILL.md vscode-extension/clear-speech.md 2>/dev/null || echo 'clear-speech skill not found in ~/.claude/skills; packaging the copy already in vscode-extension') && cd vscode-extension && npx --yes @vscode/vsce package --allow-missing-repository --skip-license -o ../adjutant-voice-notify.vsix",
+    "build:extension": "tsc --noEmit && vite build --config vite.extension.config.ts && rm -f adjutant-read-aloud.xpi && cd dist-extension && zip -qr ../adjutant-read-aloud.xpi .",
+    "test": "vitest run"
+  },
+  "devDependencies": {
+    "typescript": "^7.0.2",
+    "vite": "^8.3.8",
+    "vitest": "^4.1.12"
+  },
+  "dependencies": {
+    "kokoro-js": "^1.2.1",
+    "node-web-audio-api": "^1.0.9",
+    "onnxruntime-web": "^1.31.1",
+    "phonemizer": "^1.2.1"
+  }
+}

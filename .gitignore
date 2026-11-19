@@ -1,0 +1,9 @@
+node_modules/
+dist/
+reference/
+*.local
+samples/
+dist-extension/
+*.xpi
+dist-cli/
+*.vsix

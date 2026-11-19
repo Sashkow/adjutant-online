@@ -1,0 +1,25 @@
+{
+  "manifest_version": 2,
+  "name": "Adjutant Read Aloud",
+  "version": "0.1.0",
+  "description": "Reads the selected text aloud in a synthetic command-computer voice. Unofficial fan tool; speech is generated on your machine.",
+  "icons": { "48": "icon.svg", "96": "icon.svg" },
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "read-aloud@adjutant-online.local",
+      "strict_min_version": "128.0",
+      "data_collection_permissions": { "required": ["none"] }
+    }
+  },
+  "permissions": ["menus", "activeTab", "storage", "unlimitedStorage"],
+  "background": { "page": "background.html", "persistent": true },
+  "content_security_policy": "script-src 'self' 'wasm-unsafe-eval'; object-src 'self'",
+  "browser_action": { "default_icon": "icon.svg", "default_title": "Read selection aloud" },
+  "options_ui": { "page": "options.html", "browser_style": false },
+  "commands": {
+    "read-selection": {
+      "suggested_key": { "default": "Alt+Shift+A" },
+      "description": "Read the selected text aloud, or stop reading"
+    }
+  }
+}
