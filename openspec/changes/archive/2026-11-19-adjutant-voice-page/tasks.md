@@ -52,4 +52,4 @@
 - [ ] 6.2 Manually test in desktop Chrome, Firefox and Safari (automated run in headless Chromium passed; Firefox and Safari untested): first-use download, cached return visit, speak/stop, sliders during playback, download, shared link
 - [x] 6.3 Confirm the built `dist/` contains no game audio and the text never appears in network requests
 - [x] 6.4 Decide model hosting (self-hosted vs engine CDN) and static host; record both in design.md
-- [ ] 6.5 Deploy the static build and smoke-test the live URL
+- [x] 6.5 Deploy the static build and smoke-test the live URL
