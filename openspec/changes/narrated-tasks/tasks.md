@@ -25,5 +25,5 @@
 - [x] 3.1 Narrated task in plain mode (a small code change with tests): count the lines and check that none trails the work by more than 15 seconds
 - [x] 3.2 Narrated task in fanservice mode with a web search and a timed last step
 - [x] 3.3 Narrated task in Ukrainian
-- [ ] 3.4 Check that the turn's notification is silent, that `/respell` repeats all lines and that `/respell stop` silences everything
+- [x] 3.4 Check that the turn's notification is silent, that `/respell` repeats all lines and that `/respell stop` silences everything
 - [ ] 3.5 Owner's verdict on how often she speaks and on the phrases; adjust the limits and the table

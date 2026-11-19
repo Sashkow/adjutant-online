@@ -87,6 +87,8 @@ effect chain as `buildChain`, out to the default output (about 0.1 s later). Oth
 `ADJUTANT_FX_LINK='#echoMix=0'` (or a page address) changes the settings. Use headphones: Claude's echo cancelling
 expects its own plain voice, so from the speakers it may hear itself and stop talking.
 
+Similar projects by others, and how they differ, are noted in `docs/related-projects.md`.
+
 ## Credits and licences
 
 The voice models are not part of this repository. They are downloaded from their publishers on first use and kept in the browser's storage or, for the command line, in `~/.cache/adjutant-voice/models/`.
