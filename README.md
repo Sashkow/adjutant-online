@@ -86,3 +86,16 @@ It makes a PulseAudio null sink, `adjutant_fx`, moves Claude Desktop's streams t
 effect chain as `buildChain`, out to the default output (about 0.1 s later). Other programs are not touched.
 `ADJUTANT_FX_LINK='#echoMix=0'` (or a page address) changes the settings. Use headphones: Claude's echo cancelling
 expects its own plain voice, so from the speakers it may hear itself and stop talking.
+
+## Credits and licences
+
+The voice models are not part of this repository. They are downloaded from their publishers on first use and kept in the browser's storage or, for the command line, in `~/.cache/adjutant-voice/models/`.
+
+- **Speech engine:** [Piper](https://github.com/OHF-Voice/piper1-gpl), by the Open Home Foundation (earlier `rhasspy/piper`).
+- **Voices:** from the [rhasspy/piper-voices](https://huggingface.co/rhasspy/piper-voices) collection (MIT licence), fetched from Hugging Face at the revision pinned in `src/tts/engines/piper.ts`.
+  - English: `en_US-libritts_r-medium`, speaker 100. Trained on the [LibriTTS-R](http://www.openslr.org/141/) dataset (CC BY 4.0), fine-tuned from the Piper voice `en_US-lessac-medium`, whose data is under the [Blizzard 2013 Lessac licence](https://www.cstr.ed.ac.uk/projects/blizzard/2013/lessac_blizzard2013/license.html).
+  - Ukrainian: `uk_UA-ukrainian_tts-medium`, speaker "tetiana". Trained on data from [OHF-Voice/voice-datasets](https://github.com/OHF-Voice/voice-datasets) (CC0).
+- **Ukrainian word stress:** the dictionary of [ukrainian-word-stress](https://github.com/lang-uk/ukrainian-word-stress) by lang-uk (MIT licence), repacked as `src/tts/uk/uk-stress.bin.gz`.
+- **English pronunciation:** the `phonemizer` package (eSpeak NG rules). The optional comparison engine is [Kokoro](https://huggingface.co/hexgrad/Kokoro-82M) (Apache 2.0), through `kokoro-js`.
+
+The Adjutant is a character of StarCraft, by Blizzard Entertainment. This project imitates the style of that voice with a synthetic one. It uses and ships no game audio; a few of her short lines are quoted in the design notes.
