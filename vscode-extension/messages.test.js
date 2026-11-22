@@ -96,3 +96,61 @@ describe('staying quiet for the turn that started a reading', async () => {
     expect(hook.takeQuiet('/work/old', Date.now(), dir)).toBe(false);
   });
 });
+
+describe('who a notification is from', () => {
+  const { sourceName, announce, meaningfulTerminal, projectFromFolder } = messages;
+  it('names the project first', () => {
+    expect(sourceName({ project: 'adjutant-online', folder: '/work/other', terminal: 'deploy', topic: 'Fix the build' })).toBe('adjutant online');
+  });
+  it('falls back to the folder, then a named terminal, then the topic', () => {
+    expect(sourceName({ folder: '/work/shop-api' })).toBe('shop api');
+    expect(sourceName({ folder: require('node:os').homedir(), terminal: 'deploy watch' })).toBe('deploy watch');
+    expect(sourceName({ terminal: 'bash', topic: 'Fix the slow build' })).toBe('Fix the slow build');
+    expect(sourceName({ terminal: 'zsh' })).toBe('');
+    expect(sourceName()).toBe('');
+  });
+  it('knows which terminal names say nothing', () => {
+    expect(['bash', 'zsh', 'Task - build', 'node', ''].map(meaningfulTerminal)).toEqual(['', '', '', '', '']);
+    expect(meaningfulTerminal('database')).toBe('database');
+  });
+  it('does not take the home or root folder for a project', () => {
+    expect(projectFromFolder('/home/me', '/home/me', '/tmp')).toBe('');
+    expect(projectFromFolder('/', '/home/me', '/tmp')).toBe('');
+    expect(projectFromFolder('/tmp', '/home/me', '/tmp')).toBe('');
+    expect(projectFromFolder('/home/me/code/site', '/home/me', '/tmp')).toBe('site');
+  });
+  it('opens an alert and a plain message differently', () => {
+    expect(announce('Task build failed with exit code 2.', { alert: true, source: 'shop api' })).toBe('Priority alert from shop api! Task build failed with exit code 2.');
+    expect(announce('Task build complete.', { source: 'shop api' })).toBe('Message from shop api. Task build complete.');
+  });
+  it('says "another project" when the source is unknown', () => {
+    expect(announce('Should I continue?', { alert: true })).toBe('Priority alert from another project! Should I continue?');
+    expect(announce('Build complete.')).toBe('Message from another project. Build complete.');
+  });
+  it('does not say the alert words twice', () => {
+    expect(announce('Priority alert! The build failed.', { alert: true, source: 'site' })).toBe('Priority alert from site! The build failed.');
+    expect(announce('Увага, халепа: зібрати проєкт не вдалося.', { alert: true, source: 'site' })).toBe('Увага! Проєкт site. Халепа: зібрати проєкт не вдалося.');
+  });
+  it('opens a Ukrainian message in Ukrainian', () => {
+    expect(announce('Усі тести пройдено.', { source: 'site' })).toBe('Повідомлення від проєкту site. Усі тести пройдено.');
+    expect(announce('Що далі?', { alert: true })).toBe('Увага! Інший проєкт. Що далі?');
+  });
+});
+
+describe('the topic of a Claude Code session', async () => {
+  const fs = await import('node:fs');
+  const os = await import('node:os');
+  const path = await import('node:path');
+  const hook = (await import('./hook.js')).default;
+  const file = (lines) => { const f = path.join(fs.mkdtempSync(path.join(os.tmpdir(), 'topic-')), 't.jsonl'); fs.writeFileSync(f, lines.map((l) => JSON.stringify(l)).join('\n') + '\n'); return f; };
+  it('takes the latest title Claude Code made up', () => {
+    expect(hook.sessionTopic(file([{ type: 'ai-title', aiTitle: 'Old title' }, { type: 'user' }, { type: 'ai-title', aiTitle: 'Fix the slow build' }]))).toBe('Fix the slow build');
+  });
+  it('prefers the title the person gave', () => {
+    expect(hook.sessionTopic(file([{ type: 'custom-title', customTitle: 'Release day' }, { type: 'ai-title', aiTitle: 'Something else' }]))).toBe('Release day');
+  });
+  it('gives nothing when there is no title or no file', () => {
+    expect(hook.sessionTopic(file([{ type: 'user' }]))).toBe('');
+    expect(hook.sessionTopic('/nonexistent/t.jsonl')).toBe('');
+  });
+});

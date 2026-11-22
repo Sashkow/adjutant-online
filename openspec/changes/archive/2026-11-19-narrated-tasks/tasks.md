@@ -16,6 +16,7 @@
 - [x] 2.4 Add the fanservice column: which kind of line to look for in the reference files for each situation, "I'm picking up …" for web searches, and the unchanged limits on quotes
 - [x] 2.4a Add the two nuclear lines for irreversible actions: "ready" when prepared and waiting for the go-ahead, "launch detected" when started; never for actions that can be undone, never in place of the confirmation question
 - [x] 2.4b Add the line for closing unused shells at the owner's request (once per step, with the count; a standing habit, also outside narrated tasks)
+- [x] 2.4c Add the line for a message arriving from another session (a standing habit, also outside narrated tasks and without the fanservice word)
 - [x] 2.5 Add the countdown rules: known times only, the three marks, cancelling, dropship line only for the end of the whole task
 - [x] 2.6 Add the Ukrainian rules: language follows the task text, Листоноша phrases for the same situations, no game lines
 - [x] 2.7 Check the skill text against the project rule that it does not copy the game script
@@ -26,4 +27,4 @@
 - [x] 3.2 Narrated task in fanservice mode with a web search and a timed last step
 - [x] 3.3 Narrated task in Ukrainian
 - [x] 3.4 Check that the turn's notification is silent, that `/respell` repeats all lines and that `/respell stop` silences everything
-- [ ] 3.5 Owner's verdict on how often she speaks and on the phrases; adjust the limits and the table
+- [x] 3.5 Owner's verdict on how often she speaks and on the phrases; adjust the limits and the table (the owner asked for the change to be archived on 2026-11-19 after hearing five narrated runs; no adjustments requested)

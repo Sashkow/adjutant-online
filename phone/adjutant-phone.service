@@ -1,0 +1,19 @@
+# User service for the phone voice server. Install:
+#   cp phone/adjutant-phone.service ~/.config/systemd/user/ && systemctl --user daemon-reload
+#   systemctl --user enable --now adjutant-phone
+# The connector address is printed in: journalctl --user -u adjutant-phone
+# Set PUBLIC_URL to the Funnel address (tailscale funnel status) and WorkingDirectory to this checkout.
+[Unit]
+Description=Adjutant voice for the Claude phone app
+After=network-online.target
+
+[Service]
+WorkingDirectory=%h/thoughtbubble/adjutant-online/phone/server
+Environment=PORT=8787
+Environment=PUBLIC_URL=https://shivers-greenwashing.tail723da1.ts.net
+ExecStart=/usr/bin/node server.js
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=default.target

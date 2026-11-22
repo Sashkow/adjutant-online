@@ -106,6 +106,21 @@ When the owner asks for unused shells to be closed and the agent closes one, "Ab
 - **WHEN** a background shell is still running a command the task needs
 - **THEN** it is not closed and the line is not spoken for it
 
+### Requirement: A message from another session is announced with her line
+When a message arrives from another Claude session, "Receiving incoming transmission." SHALL be spoken before the agent acts on it. This holds with or without the fanservice word and also outside a narrated task.
+
+#### Scenario: Another session sends a message
+- **WHEN** a message from another session arrives while the agent is working
+- **THEN** "Receiving incoming transmission." is spoken once, and the owner is told in writing what the message said
+
+#### Scenario: The agent sends a message
+- **WHEN** the agent sends a message to another session
+- **THEN** the line is not spoken
+
+#### Scenario: A helper agent reports back
+- **WHEN** a helper agent that this agent started returns its result, in a task without the fanservice word
+- **THEN** the line is not spoken
+
 ### Requirement: Countdowns are spoken only for known times
 A countdown SHALL be spoken only when the remaining time is known from a timer, a stated duration or an earlier timed run in the same session. Its marks SHALL be ten, five and one minute, and marks that no longer apply SHALL be cancelled when the wait ends early. In fanservice mode, a countdown to the end of the whole task SHALL use the dropship line; any other countdown SHALL name the real event.
 

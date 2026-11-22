@@ -10,7 +10,9 @@ Before a notification is spoken it is reworded by a Claude model (through Claude
 
 A notification in Ukrainian is spoken in Ukrainian, as written: the rewording step is skipped for it, because its rules are English.
 
-A notification takes the speaker from a reading in progress (the `spell` skill): the reading stops at once, the notification is spoken, and the reading then comes back, repeating the sentence that was cut. If the notification reports a failure or ends with a question, it opens with "Priority alert!" ("Увага!" for Ukrainian) when it interrupts a reading. The turn that started a reading is not announced, so a reading never interrupts itself.
+Every notification opens by saying how urgent it is and where it comes from: "Priority alert from shop api!" for a failure or a turn that ends with a question, "Message from shop api." for the rest (in Ukrainian: "Увага! Проєкт …" and "Повідомлення від проєкту …"). The source is the VS Code project, else the folder the session runs in, else the terminal's name if it has a real one, else the session's topic; if none is known it says "another project".
+
+A notification takes the speaker from a reading in progress (the `spell` skill): the reading stops at once, the notification is spoken, and the reading then comes back, repeating the sentence that was cut. The turn that started a reading is not announced, so a reading never interrupts itself.
 
 The speech itself is generated on this machine by the project's command-line speaker (`dist-cli/say.js`). Claude Code announcements need a Stop hook in `~/.claude/settings.json`; the command "Adjutant Voice: Install Claude Code Hook" adds it and "Remove" takes it out. Settings are under "Adjutant Voice".
 

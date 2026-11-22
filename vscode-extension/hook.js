@@ -90,6 +90,30 @@ function turnSeconds(transcriptPath, now = Date.now()) {
   return undefined;
 }
 
+/**
+ * What a Claude Code session is about, from its transcript: the title the person gave it, else the
+ * one Claude Code made up. Only the end of the file is read, so this stays fast for a long session.
+ */
+function sessionTopic(transcriptPath, tailBytes = 2_000_000) {
+  try {
+    const size = fs.statSync(transcriptPath).size;
+    const start = Math.max(0, size - tailBytes);
+    const buffer = Buffer.alloc(size - start);
+    const fd = fs.openSync(transcriptPath, 'r');
+    try { fs.readSync(fd, buffer, 0, buffer.length, start); } finally { fs.closeSync(fd); }
+    const lines = buffer.toString('utf8').split('\n');
+    let made = '';
+    for (let i = lines.length - 1; i >= 0; i--) {
+      if (!lines[i].includes('-title"')) continue;
+      let entry;
+      try { entry = JSON.parse(lines[i]); } catch { continue; } // the cut-off first line
+      if (entry.type === 'custom-title' && (entry.customTitle || entry.title)) return String(entry.customTitle || entry.title);
+      if (entry.type === 'ai-title' && entry.aiTitle && !made) made = String(entry.aiTitle);
+    }
+    return made;
+  } catch { return ''; }
+}
+
 /** A reading leaves a marker for its folder here, so the turn that started it is not announced over it. */
 const QUIET_DIR = path.join(path.dirname(EVENTS_DIR), 'quiet');
 const QUIET_MAX_AGE_MS = 30_000;
@@ -108,7 +132,7 @@ function takeQuiet(cwd, now = Date.now(), dir = QUIET_DIR) {
   } catch { return false; }
 }
 
-module.exports = { EVENTS_DIR, SETTINGS, QUIET_MAX_AGE_MS, installed, install, remove, lastAssistantText, turnSeconds, takeQuiet };
+module.exports = { EVENTS_DIR, SETTINGS, QUIET_MAX_AGE_MS, installed, install, remove, lastAssistantText, turnSeconds, takeQuiet, sessionTopic };
 
 if (require.main === module) {
   const action = process.argv[2];

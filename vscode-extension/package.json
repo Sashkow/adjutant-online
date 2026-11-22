@@ -2,7 +2,7 @@
   "name": "adjutant-voice-notify",
   "displayName": "Adjutant Voice Notifications",
   "description": "Speaks one sentence in a synthetic command-computer voice when a task, a long terminal command or a Claude Code turn finishes. Unofficial fan tool.",
-  "version": "0.1.13",
+  "version": "0.1.15",
   "publisher": "local",
   "license": "MIT",
   "engines": { "vscode": "^1.93.0" },

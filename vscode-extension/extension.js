@@ -3,7 +3,7 @@ const vscode = require('vscode');
 const fs = require('node:fs');
 const path = require('node:path');
 const { spawn } = require('node:child_process');
-const { taskMessage, commandMessage, claudeMessage, program, failed, asksQuestion } = require('./messages');
+const { taskMessage, commandMessage, claudeMessage, program, failed, asksQuestion, sourceName, announce } = require('./messages');
 const hook = require('./hook');
 const { rephrase, WORK_DIR: REPHRASE_DIR } = require('./rephrase');
 
@@ -27,13 +27,14 @@ function cliPath() {
 }
 
 /**
- * `asIs` skips the rewording step (the voice test, which is about the sound). `alert` marks a
- * failure or a question: if it interrupts a reading, it opens with "Priority alert!".
+ * `asIs` skips the rewording step and the opening words (the voice test, which is about the sound).
+ * `alert` marks a failure or a question: it opens with "Priority alert from <source>!"; anything
+ * else opens with "Message from <source>.". `source` says which project or session it is about.
  */
-function say(text, asIs = false, alert = false) {
+function say(text, asIs = false, alert = false, source = '') {
   if (!config().get('enabled')) return;
   log.appendLine(`say: ${text}`);
-  queue.push({ text, asIs, alert });
+  queue.push({ text, asIs, alert, source });
   if (queue.length > MAX_QUEUE) queue = queue.slice(-MAX_QUEUE); // a burst: keep the latest
   void drain();
 }
@@ -43,7 +44,8 @@ async function drain() {
   speaking = true;
   while (queue.length) {
     const item = queue.shift();
-    const error = await run(await clearer(item), item.alert);
+    const worded = await clearer(item);
+    const error = await run(item.asIs ? worded : announce(worded, item));
     if (error) {
       log.appendLine(`error: ${error}`);
       if (!warned) {
@@ -67,12 +69,12 @@ async function clearer({ text, asIs }) {
  * Runs the speaker program; resolves to an error message, or '' on success. A notification has
  * priority over a reading in progress: the reading stops, and comes back when this has been said.
  */
-function run(text, alert) {
+function run(text) {
   return new Promise((resolve) => {
     const cli = cliPath();
     if (!cli || !fs.existsSync(cli)) return resolve(`speaker program not found at "${cli}". Run "npm run build:cli" in the Adjutant Online project or set adjutantVoice.cliPath.`);
     const link = config().get('voiceLink');
-    const args = [cli, '--priority', ...(alert ? ['--alert'] : []), ...(link ? ['--link', link] : []), text];
+    const args = [cli, '--priority', ...(link ? ['--link', link] : []), text];
     const child = spawn(config().get('nodePath') || 'node', args, { stdio: ['ignore', 'ignore', 'pipe'] });
     let stderr = '';
     child.stderr.on('data', (d) => { stderr += d; });
@@ -96,7 +98,7 @@ function watchTasks(context) {
       runningTasks = Math.max(0, runningTasks - 1);
       lastTaskEnd = Date.now();
       const seconds = (Date.now() - started) / 1000;
-      if (config().get('tasks') && seconds >= config().get('minimumSeconds')) say(taskMessage(e.execution.task.name, e.exitCode, seconds), false, failed(e.exitCode));
+      if (config().get('tasks') && seconds >= config().get('minimumSeconds')) say(taskMessage(e.execution.task.name, e.exitCode, seconds), false, failed(e.exitCode), sourceName({ project: windowProject() }));
     }),
   );
 }
@@ -118,12 +120,24 @@ function watchTerminal(context) {
       if (seconds < config().get('minimumSeconds')) return;
       const line = e.execution.commandLine?.value ?? '';
       if (config().get('ignoreCommands').includes(program(line))) return;
-      say(commandMessage(line, e.exitCode, seconds), false, failed(e.exitCode));
+      say(commandMessage(line, e.exitCode, seconds), false, failed(e.exitCode), sourceName({ project: windowProject(), terminal: e.terminal?.name }));
     }),
   );
 }
 
 // ---- Claude Code ----------------------------------------------------------
+
+/** This window's project, as its title bar names it. */
+function windowProject() {
+  const name = (vscode.workspace.name || '').replace(/\s*\((Workspace|Робоча область)\)\s*$/i, '');
+  return name || (vscode.workspace.workspaceFolders || [])[0]?.name || '';
+}
+
+/** The name of this window's project folder that contains `dir`, or '' if none does. */
+function projectOf(dir) {
+  const folder = !!dir && (vscode.workspace.workspaceFolders || []).find((f) => dir === f.uri.fsPath || dir.startsWith(f.uri.fsPath + path.sep));
+  return folder ? folder.name : '';
+}
 
 function inWorkspace(dir) {
   return !!dir && (vscode.workspace.workspaceFolders || []).some((f) => dir === f.uri.fsPath || dir.startsWith(f.uri.fsPath + path.sep));
@@ -149,7 +163,8 @@ function handleEvent(file) {
       return;
     }
     const message = event.last_assistant_message || hook.lastAssistantText(event.transcript_path);
-    say(claudeMessage(message), false, asksQuestion(message));
+    const source = sourceName({ project: projectOf(event.cwd), folder: event.cwd, topic: hook.sessionTopic(event.transcript_path) });
+    say(claudeMessage(message), false, asksQuestion(message), source);
   };
   if (inWorkspace(event.cwd)) claim();
   else setTimeout(claim, FOREIGN_WINDOW_DELAY_MS);

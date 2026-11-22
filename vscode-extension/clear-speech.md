@@ -116,7 +116,6 @@ Stand-ins for a shortage. When the whole sentence is only that one of these is r
 | A warning: doing something will delete, remove, break or overwrite something | "Be advised: [it]." If it cannot be undone, end with "Proceed with extreme caution." | "Be advised: this change deletes the old backups. Proceed with extreme caution." |
 | What must be done to reach a goal ("to do X you need Y") | "In order to [goal], you will need to [action]." or "[Thing] must be [done] if [goal]." | "In order to publish, you will need to sign in first." "The lock must be released if the deploy is to continue." |
 | Something is ready to start whenever the listener likes | "[Thing] is prepared and may be initiated at your convenience." | "The migration is prepared and may be initiated at your convenience." |
-| A statement (not a question) that the listener must now decide or act | State it, then "Awaiting orders." | "Two options are ready. Awaiting orders." |
 | Something is still running or on its way, and the listener only has to wait | State it, then "Just sit tight." | "The tests are still running. Just sit tight." |
 | The sentence quotes an error message or someone else's words | "Receiving incoming transmission: [the quoted words]. Transmission ended." | "Receiving incoming transmission: file not found. Transmission ended." |
 | Confusion or a contradiction: something is unclear, does not make sense, does not match what was said or expected, or the listener is asked what they meant | Put "Majustrait," first. | "Majustrait, the file you named does not exist." |
@@ -129,7 +128,6 @@ Rules for the frame:
 - Do not address the listener. No "Commander", "Captain", "Admiral", "Lieutenant", "General" or any other military rank, ever, even if the original uses one: leave it out.
 - The exceptions are the two rows that name "Majustrait" (her word "Magistrate", spelled this way on purpose so the voice pronounces it correctly; always use this spelling). For a short confused question of seven words or fewer, "Sir," may be used in its place. Use one form of address at most, once.
 - Write "I have", "I am", "it is", never "I've", "I'm", "it's". Short forms blur in this voice.
-- Never put "Awaiting orders." after a question. A question already asks.
 - Use "It appears that" only when the original is unsure. A plain fact stays a plain fact.
 - The frame adds no facts. "Our sensors have detected" and "I am picking up" are her way of saying "I found"; beyond those, never add fleets, times, places or anything else from her world.
 - The frame adds no linking or polite words either: no "however", no "please", no "unfortunately".
@@ -185,7 +183,7 @@ Input: Merging this will overwrite the release notes.
 Output: Be advised: merging this will overwrite the release notes.
 
 Input: There are two possible designs and I need you to choose.
-Output: There are two possible designs. Awaiting orders.
+Output: There are two possible designs. You need to choose one.
 
 Input: The server rejected my login.
 Output: Login denied by the server.
@@ -275,4 +273,4 @@ Output: Be advised: force pushing will erase the remote history. Proceed with ex
 
 ## Learning from the listener
 
-The evidence behind steps 1 to 3 is in `references/evidence.md`. The notes on how the Adjutant speaks, behind step 4, are in `references/adjutant-style.md`. When the user reports what they actually heard, compare it with what was said, add the new pattern and its example to that file, and adjust the steps or the word list here if it shows a rule is missing or wrong.
+The evidence behind steps 1 to 3 is in `references/evidence.md`. The notes on how the Adjutant speaks, behind step 4, are in `references/adjutant-style.md`. When the user reports what they actually heard, compare it with what was said, add the new pattern and its example to that file, and adjust the steps or the word list here if it shows a rule is missing or wrong. Then update `~/.claude/skills/spell/clear-speech-card.md`, the condensed copy that spell reads, to match, except on purpose: the card carries a strict test for the "prepared and may be initiated at your convenience" line (a concrete action, not started, only the go-ahead missing; never for a choice, a question, missing information, finished work or a destructive action), which this file does not.

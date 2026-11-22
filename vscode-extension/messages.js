@@ -65,4 +65,55 @@ function asksQuestion(text) {
   return /\?["'»”)]*$/.test(lines[lines.length - 1] || '');
 }
 
-module.exports = { duration, taskMessage, commandMessage, claudeMessage, program, failed, asksQuestion };
+// ---- Who a notification is from -------------------------------------------
+
+const os = require('node:os');
+const path = require('node:path');
+
+/** Terminal names that say nothing about what runs there. */
+const GENERIC_TERMINAL = /^(bash|zsh|sh|fish|dash|ksh|tcsh|pwsh|powershell|cmd|node|python\d*|terminal|javascript debug terminal|claude|claude code)$/i;
+
+/** A terminal's name if the person (or a tool) gave it one worth saying; '' for "bash" and the like. */
+function meaningfulTerminal(name) {
+  const n = String(name || '').trim();
+  return n && !GENERIC_TERMINAL.test(n) && !/^task - /i.test(n) ? n : '';
+}
+
+/** The folder's own name if it identifies a project; '' for the home folder, the root and temporary folders. */
+function projectFromFolder(dir, home = os.homedir(), tmp = os.tmpdir()) {
+  if (!dir) return '';
+  const d = path.resolve(dir);
+  if (d === path.parse(d).root || d === home || d === tmp || d === path.dirname(home)) return '';
+  return path.basename(d);
+}
+
+/**
+ * The quickest name that tells sessions apart, as the voice should say it: the VS Code project,
+ * else the folder the session runs in, else the terminal's name if it has a real one, else the
+ * session's topic. '' if none of these is known: the notification then says "another project".
+ */
+function sourceName({ project, folder, terminal, topic } = {}) {
+  return speakable(project || '') || speakable(projectFromFolder(folder)) || speakable(meaningfulTerminal(terminal)) || speakable(topic || '', 5);
+}
+
+/**
+ * The notification with its opening words: "Priority alert from <source>!" for a failure or a
+ * question, "Message from <source>." for the rest. Ukrainian text gets Ukrainian opening words.
+ * Alert words the message already opens with are not said twice.
+ */
+function announce(text, { alert = false, source = '' } = {}) {
+  let body = String(text || '').trim();
+  const ukrainian = /[\u0400-\u04FF]/.test(body);
+  if (alert) {
+    const rest = body.replace(/^(priority alert|увага)\s*[!.,:]?\s*/i, '');
+    if (rest && rest !== body) body = rest[0].toUpperCase() + rest.slice(1);
+  }
+  if (ukrainian) {
+    if (alert) return `Увага! ${source ? `Проєкт ${source}` : 'Інший проєкт'}. ${body}`;
+    return `${source ? `Повідомлення від проєкту ${source}` : 'Повідомлення з іншого проєкту'}. ${body}`;
+  }
+  const from = source || 'another project';
+  return alert ? `Priority alert from ${from}! ${body}` : `Message from ${from}. ${body}`;
+}
+
+module.exports = { duration, taskMessage, commandMessage, claudeMessage, program, failed, asksQuestion, meaningfulTerminal, projectFromFolder, sourceName, announce };

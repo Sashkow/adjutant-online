@@ -32,7 +32,7 @@ const SPOKEN_DIR = join(CACHE_DIR, 'spoken');
 /** Rendered phrases kept for reuse; notifications repeat themselves a lot. */
 const SPOKEN_KEEP = 200;
 /** Bump when the voice code changes in a way that should invalidate kept phrases. */
-const VOICE_VERSION = 11;  // 11: "Where WAS I?" follows the owner's recording
+const VOICE_VERSION = 23;  // 23: the two nuclear lines are prepared with the game's melody
 
 async function fetchToDisk(url: string, expectedBytes: number, onProgress: (loaded: number, total: number) => void): Promise<ArrayBuffer> {
   mkdirSync(MODEL_DIR, { recursive: true });
@@ -73,7 +73,7 @@ const BLIP_LEAD_MS = 580;
 export async function renderToFile(text: string, settings: Settings, onProgress: (loaded: number, total: number) => void = () => {}, lead: 'intro' | 'blip' | 'double-beep' = 'intro'): Promise<string> {
   if (lead !== 'intro') settings = { ...settings, introLevel: 0 };
   mkdirSync(SPOKEN_DIR, { recursive: true });
-  const key = createHash('sha1').update(JSON.stringify([VOICE_VERSION, text, settings, ...(lead === 'intro' ? [] : [lead === 'double-beep' ? 'double-beep-3' : lead])])).digest('hex');
+  const key = createHash('sha1').update(JSON.stringify([VOICE_VERSION, text, preparedStamp(text), settings, ...(lead === 'intro' ? [] : [lead === 'double-beep' ? 'double-beep-3' : lead])])).digest('hex');
   const file = join(SPOKEN_DIR, `${key}.wav`);
   if (existsSync(file)) return file;
 
@@ -104,9 +104,17 @@ export async function renderToFile(text: string, settings: Settings, onProgress:
   const chunks: Float32Array[] = [];
   let sampleRate = 22050;
   for (const sentence of sentences) {
+    const ready = process.env.ADJUTANT_RAW_DIR ? undefined : preparedLine(sentence);
+    if (ready) {
+      sampleRate = ready.sampleRate;
+      chunks.push(ready.samples);
+      continue;
+    }
     const out = await engine.synth(sentence, opts.rate);
     sampleRate = out.sampleRate;
     const chunk = tightenPauses(trimSilence(out.samples, sampleRate), sampleRate, opts.flow);
+    // For scripts/shape-line.py: the voice before any shaping and before the effect.
+    if (process.env.ADJUTANT_RAW_DIR) writeFileSync(join(process.env.ADJUTANT_RAW_DIR, `raw-${chunks.length}.wav`), Buffer.from(encodeWav(chunk, sampleRate)));
     chunks.push(isAlertWord(sentence) ? alertWord(chunk, sampleRate) : sentence.trim() === WHERE_WAS_I ? whereWasI(chunk) : chunk);
   }
   let samples = joinWithGaps(chunks, sampleRate, opts.gapMs, opts.blipLevel, startsParagraph);
@@ -171,6 +179,36 @@ function whereWasI(phrase: Float32Array): Float32Array {
     out[i] = phrase[i] * gain;
   }
   return out;
+}
+
+/**
+ * Lines whose melody the voice cannot produce by itself. Each was spoken once by this same voice and
+ * then given the melody, loudness and pause of a reference delivery by scripts/shape-line.py, which
+ * changes pitch without changing the speed of any word or the colour of the voice. The result is kept
+ * in src/node/lines/ and used here in place of a fresh rendering; the effect is applied as usual.
+ */
+const PREPARED_LINES: Record<string, string> = {
+  'nuclear missile ready.': 'nuclear-missile-ready.wav',
+  'nuclear launch detected.': 'nuclear-launch-detected.wav',
+  'nuclear launch, detected.': 'nuclear-launch-detected.wav',
+};
+
+const linesDir = () => join(dirname(fileURLToPath(import.meta.url)), '..', 'src', 'node', 'lines'); // dist-cli/say.js sits one folder below the project root
+
+/** Changes when a prepared line that `text` uses is made again, so an older rendering of the text is not reused. */
+function preparedStamp(text: string): string {
+  return Object.entries(PREPARED_LINES).filter(([words]) => text.toLowerCase().includes(words)).map(([, name]) => {
+    try { const s = statSync(join(linesDir(), name)); return `${name}:${s.size}:${Math.round(s.mtimeMs)}`; } catch { return `${name}:none`; }
+  }).join(',');
+}
+
+function preparedLine(sentence: string): { samples: Float32Array; sampleRate: number } | undefined {
+  const name = PREPARED_LINES[sentence.trim().toLowerCase()];
+  if (!name) return undefined;
+  try {
+    const bytes = readFileSync(join(linesDir(), name));
+    return decodeWav(bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength) as ArrayBuffer);
+  } catch { return undefined; } // not prepared on this machine: the voice says it in its own way
 }
 
 function prune(): void {

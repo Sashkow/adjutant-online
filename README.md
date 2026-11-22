@@ -89,6 +89,20 @@ expects its own plain voice, so from the speakers it may hear itself and stop ta
 
 Similar projects by others, and how they differ, are noted in `docs/related-projects.md`.
 
+## Voice mode (talk with the Adjutant in Claude Code)
+
+`/adjutant-online` in a Claude Code session starts a lasting spoken conversation: the microphone is listened to without end, every phrase you say is a request, and the answer is spoken in the Adjutant voice (one to three sentences; code and detail stay on screen). `/adjutant-offline`, a typed "stop", or saying "Adjutant offline" ends it. English and Ukrainian are recognised, phrase by phrase.
+
+- **What is not heard.** On speakers, a phrase recorded while the computer plays sound is dropped: the Adjutant's own speech, notifications, music, video. After ten seconds of other sound a note on screen says listening is paused. On headphones nothing is dropped, so you can speak over her.
+- **Risky requests.** A spoken request that changes the codebase or cannot be undone is confirmed aloud: "Nuclear missile ready." and what was understood; you repeat part of the action (a bare "yes" is not enough); "Nuclear launch, detected". An action that cannot be undone then waits four seconds, and "stop" or "wait" cancels it, even said over her voice.
+- **The two nuclear lines** are spoken with the melody of the Adjutant's delivery in StarCraft. The voice cannot be told how to intone, so each line was spoken once, re-pitched with a vocoder and kept in `src/node/lines/`; `scripts/shape-line.py` makes them again (needs `pip install pyworld soundfile`). No game audio is in them.
+- **Privacy.** Sound is recognised on this machine by `faster-whisper` (model `small`) and is not stored or sent anywhere; only the recognised text reaches the session.
+- **Parts.** `scripts/voice-listen.py` is the listener (tests: `python3 -m unittest scripts/voice_listen_test.py`), `scripts/voice.sh` starts, stops and follows it. The two skills are in `~/.claude/skills/adjutant-online/` and `adjutant-offline/`. Needs PulseAudio (`parec`, `pactl`) and a Python with `faster-whisper` at `/opt/ro/whisper/venv` (or `VOICE_PYTHON`). Why a phrase was kept or dropped is in `~/.cache/adjutant-voice/voice/debug.log`.
+
+## Phone voice (Claude app on Android)
+
+A small MCP App server on the laptop runs the same speaker and returns an audio player into a chat in a claude.ai Project, "Adjutant voice", through a custom connector and a Tailscale Funnel. Type `say <text>` (spoken exactly) or `spell <text>` (reworded for the ear first) and tap Play. The laptop must be on. Setup, the Funnel's public address and how to stop it: [phone/README.md](phone/README.md).
+
 ## Credits and licences
 
 The voice models are not part of this repository. They are downloaded from their publishers on first use and kept in the browser's storage or, for the command line, in `~/.cache/adjutant-voice/models/`.
