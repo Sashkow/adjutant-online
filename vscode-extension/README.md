@@ -6,7 +6,7 @@ Speaks one sentence in the Adjutant Online voice when work that took at least a 
 - a terminal command finishes ("Command npm test failed with exit code 1.");
 - Claude Code finishes a turn (the opening sentence of its final message).
 
-Before a notification is spoken it is reworded by a Claude model (through Claude Code, a few seconds) so that it is easier to make out through the voice effect: short words become longer ones, abbreviations are spelled out. The rules are the `clear-speech` skill (`~/.claude/skills/clear-speech`); a copy is packaged with the extension at build time. This sends the notification text to Claude; the setting "Rephrase" turns it off, and if the call fails the original wording is spoken.
+Before a notification is spoken it is reworded by a Claude model (through Claude Code, a few seconds) so that it is easier to make out through the voice effect: short words become longer ones, abbreviations are spelled out. The rules are the `clear-speech` skill (`skills/clear-speech` in this repository); a copy is packaged with the extension at build time. This sends the notification text to Claude; the setting "Rephrase" turns it off, and if the call fails the original wording is spoken.
 
 A notification in Ukrainian is spoken in Ukrainian, as written: the rewording step is skipped for it, because its rules are English.
 

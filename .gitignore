@@ -1,9 +1,10 @@
 node_modules/
-dist/
 reference/
-*.local
 samples/
-dist-extension/
-*.xpi
+*.local
 dist-cli/
 *.vsix
+__pycache__/
+# written by `npm run build:vscode`
+vscode-extension/clear-speech.md
+vscode-extension/default-cli.json

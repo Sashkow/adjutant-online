@@ -12,7 +12,7 @@ import { DOUBLE_BEEP_LEVEL, doubleBeep, introTone, withIntro } from '../effect/i
 import { RENDER_SAMPLE_RATE, loopCompensation } from '../effect/graph';
 import { renderOffline } from '../effect/render';
 import { decodeWav, encodeWav } from '../audio/wav';
-import { decodeState } from '../page/hash';
+import { decodeState } from '../effect/link';
 import { joinWithGaps, normalisePeak, sentenceBounds, splitParagraphs, tightenPauses, trimSilence } from '../tts/text';
 import { createPiper, type PiperDeps } from '../tts/engines/piper';
 import { createBilingual } from '../tts/engines/ukrainian';

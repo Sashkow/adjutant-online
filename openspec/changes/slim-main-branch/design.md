@@ -140,6 +140,17 @@ So these also leave `main`, beyond the list in decision 3: `src/tts/engines/libr
 | `voice-effect`, `speech-synthesis` | `main` | they describe the shared voice; a few of their requirements (in-browser synthesis, the worker, live parameter changes) are met only by code on `full`. They are kept whole and unchanged, with one line in the README of `main` saying so |
 | `voice-page`, `voice-mode`, `phone-voice` | `full` only | their code leaves |
 
+## Findings while slimming (tasks 4.1 to 6.5, 2026-11-23)
+
+- The slim tree was made in a second working copy (`../adjutant-online-slim`, branch `slim-main`), because removing `scripts/voice.sh` from the main checkout would have ended the voice mode that was running from it.
+- `onnxruntime-node` is declared at 1.21.0, the version the speaker was running with. With `kokoro-js` and `onnxruntime-web` gone, `npm audit` reports no finding at all, and the install has 138 packages, two with an install script (`onnxruntime-node`, and `fsevents` on macOS only). A new `.npmrc` tells `onnxruntime-node` not to download graphics-card libraries.
+- `vscode-extension/clear-speech.md` and `vscode-extension/default-cli.json` were tracked files holding the owner's home path. They are written by `npm run build:vscode`, so on `main` they are no longer tracked and are ignored.
+- Three archived changes described parts that left and were removed from `main` with them: `evening-greeting`, `phone-voice-project`, `adjutant-voice-mode`. The archive of `adjutant-voice-page` stays, because it holds the design of the voice effect.
+- `src/tts/types.ts` keeps only the `Engine` interface; `vite.config.ts` keeps only the test settings; `package.json` keeps the scripts `build:cli`, `build:vscode` and `test`.
+- The `phonemizer` package (Apache 2.0) bundles eSpeak NG, which is licensed GPL version 3 or later. The README's licences section says so. This matters if the company's list of accepted licences (the owner named Apache 2.0, MIT, BSD, MS-PL, OFL, ISC, BSL and MPL on 2026-11-23) applies to bundled parts.
+- Checked in a clean copy of the tree: `npm ci`, `npm run build:cli`, 120 tests pass, `npm audit --omit=dev` clean, `scripts/offline-check.sh` passes in English and Ukrainian, `scripts/install-skills.sh` installs three skills with the copy's own path and removes them again. `npm run build:vscode` packs the extension. Not done: installing that package into VS Code (task 6.4), which would replace the extension the owner is using.
+- Six stand-in English voices were auditioned through the effect on 2026-11-23 and the owner found none close to the present voice, so the English voice stays. Piper's publishers are retraining lessac-derived voices under the same names; the owner asked for a check on or after 2026-12-23.
+
 ## Risks / Trade-offs
 
 - **The install script overwrites a skill the owner edited in the home folder** → It keeps the old folder with a date in its name and reports it. The rule from now on: skills are edited in the repository and installed, not edited in place.

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { DEFAULT_PRESET } from '../effect/preset';
-import { decodeState, encodeState } from './hash';
+import { DEFAULT_PRESET } from './preset';
+import { decodeState, encodeState } from './link';
 
 describe('URL state', () => {
   it('is empty for empty text and default settings', () => {

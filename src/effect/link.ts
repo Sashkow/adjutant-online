@@ -1,4 +1,4 @@
-import { PARAM_SPECS, clampParam, diffSettings, type Settings } from '../effect/params';
+import { PARAM_SPECS, clampParam, diffSettings, type Settings } from './params';
 import { MAX_CHARS } from '../tts/text';
 
 /**
