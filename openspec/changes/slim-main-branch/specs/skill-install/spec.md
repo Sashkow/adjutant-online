@@ -1,15 +1,19 @@
 ## ADDED Requirements
 
-### Requirement: The speaking skills are kept in the repository
-The `main` branch SHALL contain the skills `spell`, `respell` and `clear-speech` under `skills/`, complete enough that a computer with only a clone of `main` can install and use them. No file under `skills/` SHALL contain a path into a particular person's home folder. The skills `adjutant-online` and `adjutant-offline` SHALL be on the `full` branch only.
+### Requirement: The skills are kept in the repository
+The `main` branch SHALL contain the skills `spell`, `respell`, `clear-speech`, `adjutant-online` and `adjutant-offline` under `skills/`, complete enough that a computer with only a clone of `main` can install and use them. No file under `skills/` SHALL contain a path into a particular person's home folder.
 
 #### Scenario: A reviewer looks for a fixed path
 - **WHEN** the files under `skills/` on `main` are searched for `/home/`
 - **THEN** nothing is found
 
-#### Scenario: A reviewer looks for the voice-mode skills on main
+#### Scenario: A reviewer lists the skills on main
 - **WHEN** the folder `skills/` on `main` is listed
-- **THEN** it holds `spell`, `respell` and `clear-speech`, and neither `adjutant-online` nor `adjutant-offline`
+- **THEN** it holds `spell`, `respell`, `clear-speech`, `adjutant-online` and `adjutant-offline`
+
+#### Scenario: The owner leaves voice mode out
+- **WHEN** `skills/adjutant-online` and `skills/adjutant-offline` are deleted from a copy before `scripts/install-skills.sh` is run
+- **THEN** only the three speaking skills are installed
 
 #### Scenario: The extension takes its rules from the repository
 - **WHEN** `npm run build:vscode` is run on a computer that has no `~/.claude/skills/clear-speech/`
@@ -34,16 +38,16 @@ The `main` branch SHALL contain the skills `spell`, `respell` and `clear-speech`
 - **WHEN** the Claude Code settings file is not valid JSON
 - **THEN** the script leaves it untouched, installs the skills, and says that the hook was not added and why
 
-#### Scenario: Installing from the full branch
-- **WHEN** the script is run from a checkout of `full`
-- **THEN** all five skills are installed, and `/adjutant-online` starts the listener
+#### Scenario: All five skills
+- **WHEN** the script is run from a checkout of `main` or of `full`
+- **THEN** all five skills are installed, and, where `faster-whisper` is present, `/adjutant-online` starts the listener
 
 ### Requirement: The same script removes what it installed
 `scripts/install-skills.sh --remove` SHALL delete the skills it installs from the Claude Code skills folder and take its hook out of the settings, leaving every other skill and setting as it was.
 
 #### Scenario: Removal
 - **WHEN** `scripts/install-skills.sh --remove` is run after an install from `main`
-- **THEN** `spell`, `respell` and `clear-speech` are gone from the skills folder, the `/respell` hook is gone from the settings, and other skills and hooks are unchanged
+- **THEN** the five skills are gone from the skills folder, the `/respell` hook is gone from the settings, and other skills and hooks are unchanged
 
 ### Requirement: Fanservice mode says when the game lines are missing
 Where the game-line files in `reference/` are not present, a fanservice reading SHALL use only the stock phrases named in the clear-speech skill, and the user SHALL be told so in one line. The game-line files SHALL NOT be in the repository.

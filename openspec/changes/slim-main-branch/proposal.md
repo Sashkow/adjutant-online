@@ -4,9 +4,9 @@ The owner wants to use the speaker and the VS Code notifications on a work compu
 
 ## What Changes
 
-- **BREAKING** `main` keeps only: the command-line speaker (`src/node/say.ts` and the voice code it needs), the VS Code notifications extension, the speaking skills, the Ukrainian stress data and its build script, and the specs of those parts.
+- **BREAKING** `main` keeps only: the command-line speaker (`src/node/say.ts` and the voice code it needs), the VS Code notifications extension, the skills, voice mode, the Ukrainian stress data and its build script, and the specs of those parts.
+- **Voice mode is on `main`** (the owner's decision of 2026-11-23, after the first slim version left it out): the listener `scripts/voice-listen.py`, its helper `scripts/voice.sh`, their tests, the spec `voice-mode` and the skills `adjutant-online` and `adjutant-offline`. The live effect for Claude Desktop is not. The README says when the microphone is open, what happens to the sound, and where the recognised text goes.
 - The three speaking skills for Claude Code, `spell`, `respell` and `clear-speech`, which today exist only in the owner's home folder, are added to `main` under `skills/`. An install script copies them into `~/.claude/skills/`, writes the path of the checkout into them, and adds the `/respell` hook; a matching step removes them. With this, the owner can set up both the notifications and the spoken readings on another computer from the repository alone.
-- The two voice-mode skills, `adjutant-online` and `adjutant-offline`, are added to `full` only, next to the listener they start.
 - A new branch, `full`, is made from `main` as it is now and holds everything. The parts leaving `main` go on living there: the web page and tuning page, the Firefox extension, the phone server, the Claude Desktop live effect, the presentations, and the voice-mode microphone listener.
 - The GitHub Pages workflow leaves `main` and deploys the page from `full`.
 - The `kokoro-js` package leaves `main` with the web page. It is the source of the three high-severity `npm audit` findings (through `sharp`). The packages the speaker needs are declared directly.

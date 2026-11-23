@@ -120,6 +120,19 @@ Because it installs whatever is in `skills/`, the same script installs three ski
 
 The two files were read for quoted game lines (task 3.2). They hold short phrases as markers of her manner, a few words each (about eight in `fanservice.md`, about thirty fragments in `adjutant-style.md`), and no passages. They are added as they are. The owner should look at them once before they are pushed, since the README says only that "a few of her short lines are quoted in the design notes".
 
+### 11. Voice mode is on `main`; the Claude Desktop effect is not
+
+Decided by the owner on 2026-11-23, after the first slim version (commit `3396a1a`) had left voice mode on `full` and the README's wording made the owner think it was on `main`. This replaces what decisions 3 and 9 and the first proposal say about the listener and the two voice-mode skills.
+
+- Back on `main`: `scripts/voice-listen.py`, `scripts/voice.sh`, `scripts/voice_listen_test.py`, `skills/adjutant-online/`, `skills/adjutant-offline/`, the spec `voice-mode` and its two archived changes.
+- Still only on `full`: `scripts/claude-voice-fx.sh` and `src/node/live.ts`, which put Claude Desktop's own voice through the effect. They share the words "voice mode" with the listener and nothing else.
+- `scripts/voice.sh` looked for Python at a path of the owner's machine. It now takes `VOICE_PYTHON`, else `.venv` in the checkout, else that path, and says how to make one when none is found.
+- `scripts/offline-check.sh` has a third step: where a Python with `faster-whisper` is present, the recognition model is loaded with the network cut off.
+- Licences, read from the installed packages and the model's page: `faster-whisper` MIT, `ctranslate2` MIT, the model `Systran/faster-whisper-small` MIT. The packages that `pip` installs beneath them were not all checked.
+
+- **What it costs the request to the manager:** `main` now holds a program that records the microphone, so "nothing on `main` listens" can no longer be said. The README says instead when the microphone is open (only between `/adjutant-online` and switching off), that sound is recognised on the machine and neither stored nor sent, and that the recognised text goes to the Claude Code session and two log files.
+- **Alternative considered:** a third branch between `main` and `full`. Rejected: the owner wants one branch to reproduce the whole working set on another computer.
+
 ## Findings (tasks 2.1 to 2.3, on commit `e719f57`)
 
 **Packages the built speaker loads** (`dist-cli/say.js`): `phonemizer` and `node-web-audio-api`, both declared in `package.json`, and `onnxruntime-node`, which is not declared: it is installed only through `kokoro-js` → `@huggingface/transformers` (version 1.21.0). It must become a direct dependency when `kokoro-js` is removed. `onnxruntime-web` is not loaded by the speaker.

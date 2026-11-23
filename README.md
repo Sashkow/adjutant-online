@@ -1,18 +1,30 @@
 # Adjutant Online
 
-A calm, metallic ship's-computer voice for your own machine. It speaks one sentence when a long task, a terminal command or a Claude Code turn finishes in VS Code, and it reads Claude Code's replies aloud on request. The speech is generated on the computer itself, in English and Ukrainian.
+A calm, metallic ship's-computer voice for your own machine. It speaks one sentence when a long task, a terminal command or a Claude Code turn finishes in VS Code, it reads Claude Code's replies aloud on request, and in voice mode you can talk with a Claude Code session and hear the answers. Speech is generated, and recognised, on the computer itself, in English and Ukrainian.
 
 Unofficial fan tool. Not affiliated with Blizzard Entertainment. No game audio is used or shipped.
 
 ## What is on this branch
 
-`main` holds three things and what they need:
+The branch `main` holds four things and what they need:
 
 - **The speaker**, a command-line program: `node dist-cli/say.js "Task complete."`
 - **VS Code notifications**, an extension that calls the speaker: `vscode-extension/`
-- **Three Claude Code skills** that read replies aloud: `skills/spell`, `skills/respell`, `skills/clear-speech`
+- **Three Claude Code skills that speak**: `skills/spell`, `skills/respell`, `skills/clear-speech`. They turn text into speech and take no sound in.
+- **Voice mode**, the one part that listens: the skills `skills/adjutant-online` and `skills/adjutant-offline`, and the listener `scripts/voice-listen.py` with its helper `scripts/voice.sh`.
 
-Other parts of the project live on the branch [`full`](../../tree/full) and are not installed from here: a web page, a Firefox extension, a voice mode that listens to the microphone, a server that plays the voice in the Claude phone app, and a live effect for Claude Desktop. Nothing on `main` records the microphone or accepts connections from the network.
+**When the microphone is used.** Only while voice mode is on: from the command `/adjutant-online` in a Claude Code session until `/adjutant-offline`, a typed "stop", or the spoken words "Adjutant offline". The speaker, the notifications and the three speaking skills never open the microphone. Voice mode is optional: without `faster-whisper` installed it cannot start, and the rest works the same.
+
+Nothing on `main` accepts connections from the network.
+
+**Not on this branch.** These parts live on the branch [`full`](../../tree/full) and are not installed from `main`:
+
+| Part | What it is |
+|---|---|
+| Web page | Type text and hear it in the browser. |
+| Firefox extension | Reads the selected text of a web page aloud. |
+| Phone voice | A small server on the laptop that plays the voice in the Claude phone app, reached from the internet. |
+| Claude Desktop effect | Puts the sound of Claude Desktop's own voice mode through the voice effect. It is a different thing from the voice mode above. |
 
 ## What it reads, and where that text goes
 
@@ -21,7 +33,8 @@ Other parts of the project live on the branch [`full`](../../tree/full) and are 
 - the name, exit code and duration of a finished VS Code task;
 - the command line, exit code and duration of a finished terminal command (only the program name and up to two plain words are spoken);
 - the last reply of a finished Claude Code turn, the session's title and its timing, from the session's transcript file;
-- with the skills: the reply you ask it to read.
+- with the skills: the reply you ask it to read;
+- in voice mode: the sound of the microphone, and the sound the computer itself is playing (to tell your voice from its own).
 
 It does not read source files, the clipboard or the open editor.
 
@@ -31,9 +44,19 @@ It does not read source files, the clipboard or the open editor.
 - the cache of spoken phrases, `~/.cache/adjutant-voice/spoken/`, as sound files (the last 200 phrases);
 - **Claude, through Claude Code**, when rewording is on. Before a notification is spoken it is reworded so that it is easier to make out through the voice effect. The call uses no tools, no connectors and no saved session. To switch it off, set `adjutantVoice.rephrase` to `false` in the VS Code settings; nothing then leaves the machine.
 
+**In voice mode, sound goes to**
+
+- the speech recogniser on this machine (`faster-whisper`, model `small`). The sound is held in memory, cut into phrases and recognised; it is not written to disk and not sent anywhere.
+- Only the recognised **text** leaves the listener: to the Claude Code session that switched voice mode on, where it is handled like a typed message, and so reaches Claude as any prompt does.
+- The recognised text is also written to two files under `~/.cache/adjutant-voice/voice/`: `events.log` (emptied each time voice mode starts) and `debug.log` (why each phrase was kept or dropped).
+
+An open microphone also hears other people in the room. On speakers, phrases recorded while the computer plays sound are dropped; with headphones nothing is dropped.
+
+A spoken request that would change files or cannot be undone is not carried out at once: the Adjutant says what she understood, and you have to repeat part of the action aloud (a bare "yes" is not enough). An action that cannot be undone then waits four seconds, in which "stop" or "wait" cancels it.
+
 There is no telemetry and no analytics.
 
-**The only downloads** are the voice models, fetched once from Hugging Face at a fixed revision and kept in `~/.cache/adjutant-voice/models/`: English (79 MB) the first time anything is spoken, Ukrainian (77 MB) the first time Ukrainian text is spoken. After that the speaker needs no network; see "Check that it works offline".
+**The only downloads** are the voice models, fetched once from Hugging Face at a fixed revision and kept in `~/.cache/adjutant-voice/models/`: English (79 MB) the first time anything is spoken, Ukrainian (77 MB) the first time Ukrainian text is spoken. Voice mode adds one more, the first time it starts: the recognition model (464 MB), from Hugging Face into `~/.cache/huggingface/`. After that neither the speaker nor the recogniser needs the network; see "Check that it works offline".
 
 ## Install
 
@@ -72,8 +95,24 @@ It copies the skills in `skills/` into `~/.claude/skills/`, writes the path of t
 - `/spell` reads the last reply aloud; `/spell <task>` does the task and reports its milestones aloud.
 - `/respell` repeats the last reading, word for word.
 - `clear-speech` rewords a sentence so that it survives the voice effect.
+- `/adjutant-online` and `/adjutant-offline` switch voice mode on and off; see below.
+
+To leave voice mode out, delete `skills/adjutant-online` and `skills/adjutant-offline` from your copy before running the script.
 
 Edit skills in `skills/` and install them again, not in `~/.claude/skills/`.
+
+### Voice mode
+
+Voice mode needs the skills above, PulseAudio or PipeWire with its PulseAudio tools (`parec`, `pactl`), and a Python that has `faster-whisper`:
+
+```bash
+python3 -m venv .venv
+.venv/bin/pip install faster-whisper
+```
+
+`scripts/voice.sh` uses the Python named in `VOICE_PYTHON`, or else the `.venv` in this folder. Then type `/adjutant-online` in a Claude Code session. It answers aloud in one to three sentences; code and detail stay on screen. English and Ukrainian are recognised, phrase by phrase. The listener's own tests: `python3 -m unittest scripts/voice_listen_test.py`.
+
+The two spoken lines of the confirmation ("Nuclear missile ready." and "Nuclear launch, detected.") are kept in `src/node/lines/`, spoken once by this project's voice and re-pitched (`scripts/shape-line.py`, which needs `pip install pyworld soundfile`). No game audio is in them.
 
 ## Check that it works offline
 
@@ -81,7 +120,7 @@ Edit skills in `skills/` and install them again, not in `~/.claude/skills/`.
 scripts/offline-check.sh
 ```
 
-On Linux it starts the speaker in a place with no network at all (`unshare -rn`), first shows that the model site cannot be reached from there, and then has a sentence that was never spoken before written to a sound file. Where `unshare` is not available it prints the check to do by hand.
+On Linux it starts the speaker in a place with no network at all (`unshare -rn`), first shows that the model site cannot be reached from there, and then has a sentence that was never spoken before written to a sound file. If voice mode is set up, it also loads the recognition model there. Where `unshare` is not available it prints the check to do by hand.
 
 ## Remove
 
@@ -89,6 +128,7 @@ On Linux it starts the speaker in a place with no network at all (`unshare -rn`)
 code --uninstall-extension local.adjutant-voice-notify
 scripts/install-skills.sh --remove
 rm -rf ~/.cache/adjutant-voice
+rm -rf ~/.cache/huggingface/hub/models--Systran--faster-whisper-small   # voice mode's recognition model
 ```
 
 Run "Adjutant Voice: Remove Claude Code Hook" before uninstalling the extension, if you installed the hook. Then delete this folder.
@@ -112,13 +152,14 @@ Speakers take turns through a lock file, so two voices never overlap. A notifica
 - `src/tts/` the Piper voices, sentence splitting, Ukrainian stress and numbers
 - `vscode-extension/` the notifications
 - `skills/` the Claude Code skills; `scripts/install-skills.sh` installs them
+- `scripts/voice-listen.py`, `scripts/voice.sh` voice mode's listener and its helper
 - `openspec/` the specifications and the history of changes
 
 Two specifications, `voice-effect` and `speech-synthesis`, describe the voice as a whole. A few of their requirements (synthesis in the browser, changing the effect while it plays) are met by code on the `full` branch only.
 
 ## Branches
 
-Work on the speaker, the notifications and the skills is done on `main` and merged into `full`. `full` is never merged into `main`: that would bring back the parts that were taken out.
+Work on the speaker, the notifications, the skills and voice mode is done on `main` and merged into `full`. `full` is never merged into `main`: that would bring back the parts that were taken out.
 
 ## Credits and licences
 
@@ -151,6 +192,16 @@ The Ukrainian model card names the dataset repository above, which states CC0 fo
 | [phonemizer](https://www.npmjs.com/package/phonemizer) (turns English text into sounds) | Apache 2.0 |
 
 The `phonemizer` package includes [eSpeak NG](https://github.com/espeak-ng/espeak-ng), which is licensed under the GNU General Public License, version 3 or later.
+
+### What voice mode adds
+
+| Part | Licence |
+|---|---|
+| [faster-whisper](https://github.com/SYSTRAN/faster-whisper) (speech recognition) | MIT |
+| [CTranslate2](https://github.com/OpenNMT/CTranslate2) (runs the recognition model) | MIT |
+| The recognition model, [Systran/faster-whisper-small](https://huggingface.co/Systran/faster-whisper-small), a conversion of OpenAI's Whisper | MIT |
+
+`pip` installs further packages that these depend on; their licences were not all checked.
 
 ### Other
 

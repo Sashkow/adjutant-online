@@ -5,6 +5,7 @@ samples/
 dist-cli/
 *.vsix
 __pycache__/
+.venv/
 # written by `npm run build:vscode`
 vscode-extension/clear-speech.md
 vscode-extension/default-cli.json

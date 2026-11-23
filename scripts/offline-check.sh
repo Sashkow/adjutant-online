@@ -51,4 +51,18 @@ echo "2. Can the speaker make a new sentence with the network cut off?"
 speak English "Offline check at $(date +%H) hours, $(date +%M) minutes and $(date +%S) seconds."
 [ -f "$ukrainian" ] && speak Ukrainian "Перевірка без мережі о $(date +%H) годині, $(date +%M) хвилин і $(date +%S) секунд."
 
-if [ "$failed" = 0 ]; then echo "Result: the speaker works without the network."; else echo "Result: the offline check failed."; exit 1; fi
+# Voice mode's speech recognition, if it is set up on this machine.
+voice_python="${VOICE_PYTHON:-}"
+[ -n "$voice_python" ] || { [ -x "$root/.venv/bin/python" ] && voice_python="$root/.venv/bin/python"; }
+[ -n "$voice_python" ] || voice_python=/opt/ro/whisper/venv/bin/python
+if [ -x "$voice_python" ]; then
+  echo "3. Can voice mode load its speech recognition with the network cut off?"
+  if unshare -rn "$voice_python" -c "from faster_whisper import WhisperModel; WhisperModel('${VOICE_MODEL:-small}', device='cpu', compute_type='int8')" >/dev/null 2>"$out/whisper.err"; then
+    echo "   Yes: the recognition model loads offline."
+  else
+    echo "   FAILED (if voice mode was never started, its model is not downloaded yet)."; tail -n 2 "$out/whisper.err" | sed 's/^/     /'
+    failed=1
+  fi
+fi
+
+if [ "$failed" = 0 ]; then echo "Result: everything checked works without the network."; else echo "Result: the offline check failed."; exit 1; fi

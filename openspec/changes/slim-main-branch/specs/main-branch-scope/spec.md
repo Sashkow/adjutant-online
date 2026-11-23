@@ -1,10 +1,14 @@
 ## ADDED Requirements
 
-### Requirement: The main branch holds only the speaker and the notifications
-The `main` branch SHALL contain the command-line speaker, the VS Code notifications extension, the speaking skills for Claude Code, the voice code and data they need, and the specs of those parts. It SHALL NOT contain code that records the microphone, code that serves requests from the network, a browser extension, or the web page.
+### Requirement: The main branch holds only the speaker, the notifications, the skills and voice mode
+The `main` branch SHALL contain the command-line speaker, the VS Code notifications extension, the skills for Claude Code, voice mode (its listener, helper script and two skills), the voice code and data they need, and the specs of those parts. It SHALL NOT contain code that serves requests from the network, a browser extension, the web page, or the live effect for Claude Desktop.
 
-#### Scenario: A reviewer looks for the microphone listener
-- **WHEN** a reviewer searches the files of `main` for the microphone listener (`voice-listen.py`, `parec`)
+#### Scenario: A reviewer looks for what records the microphone
+- **WHEN** a reviewer searches the files of `main` for code that records sound (`parec`)
+- **THEN** it is found in `scripts/voice-listen.py` only, the listener of voice mode
+
+#### Scenario: A reviewer looks for the Claude Desktop effect
+- **WHEN** a reviewer searches the files of `main` for `claude-voice-fx.sh` and `live.ts`
 - **THEN** nothing is found
 
 #### Scenario: A reviewer looks for a network server
@@ -15,15 +19,23 @@ The `main` branch SHALL contain the command-line speaker, the VS Code notificati
 - **WHEN** `main` is cloned and `npm ci`, `npm run build:cli` and `npm test` are run
 - **THEN** all three succeed and `node dist-cli/say.js "Voice check."` speaks the sentence
 
+#### Scenario: The microphone is used only in voice mode
+- **WHEN** the speaker, the VS Code extension, or the skills `spell`, `respell` and `clear-speech` are used and voice mode was not switched on
+- **THEN** no process of this project has the microphone open
+
+#### Scenario: Voice mode is left out
+- **WHEN** `main` is installed on a computer without `faster-whisper`
+- **THEN** the speaker, the notifications and the speaking skills work, and `scripts/voice.sh start` says what is missing and starts nothing
+
 #### Scenario: The notifications are built from a fresh clone
 - **WHEN** `npm run build:vscode` is run on a fresh clone of `main`
 - **THEN** the extension package is written and, once installed, the voice test command speaks
 
 ### Requirement: Every other part lives on the full branch
-The `full` branch SHALL contain everything `main` contains and also the web page, the Firefox extension, the phone server, the Claude Desktop live effect, the presentations and the voice-mode listener, each working as before. The web page SHALL be deployed from `full`.
+The `full` branch SHALL contain everything `main` contains and also the web page, the Firefox extension, the phone server, the Claude Desktop live effect and the presentations, each working as before. The web page SHALL be deployed from `full`.
 
-#### Scenario: Voice mode from the full branch
-- **WHEN** the checkout is on `full` and `scripts/voice.sh start` is run
+#### Scenario: Voice mode from either branch
+- **WHEN** the checkout is on `full` or on `main`, `faster-whisper` is installed, and `scripts/voice.sh start` is run
 - **THEN** the listener starts as it did before the change
 
 #### Scenario: The page is deployed
@@ -35,11 +47,15 @@ The `full` branch SHALL contain everything `main` contains and also the web page
 - **THEN** `full` has the change and has lost none of its own files
 
 ### Requirement: The speaker works without the network after the model download
-Once the voice models are in the cache, the speaker on `main` SHALL produce speech with no network access. `main` SHALL include a script that checks this and reports the result.
+Once the voice models are in the cache, the speaker on `main` SHALL produce speech with no network access, and voice mode's speech recognition SHALL load with no network access once its model is in the cache. `main` SHALL include a script that checks this and reports the result.
 
 #### Scenario: The offline check passes
 - **WHEN** the English model is cached and `scripts/offline-check.sh` is run on Linux
 - **THEN** it shows that the network is unreachable, a sound file of a sentence not spoken before is written, and the script reports success
+
+#### Scenario: Voice mode is set up
+- **WHEN** a Python with `faster-whisper` and its model is present and `scripts/offline-check.sh` is run on Linux
+- **THEN** it also reports that the recognition model loads with the network unreachable
 
 #### Scenario: The model is not cached
 - **WHEN** `scripts/offline-check.sh` is run before any model was downloaded
@@ -57,7 +73,7 @@ Once the voice models are in the cache, the speaker on `main` SHALL produce spee
 - **THEN** no high or critical finding is reported
 
 ### Requirement: The main branch says what it is and what it reads
-The README on `main` SHALL state: what the tool reads (task names, terminal command lines, the last Claude Code reply), where that text can go (the speaker, the phrase cache, and Claude through Claude Code when rewording is on), how to switch rewording off, how to run the offline check, how to remove the tool, and that other parts of the project live on the `full` branch. The repository SHALL have a `LICENSE` file at its root.
+The README on `main` SHALL state: what the tool reads (task names, terminal command lines, the last Claude Code reply, and in voice mode the microphone), where that text can go (the speaker, the phrase cache, and Claude through Claude Code when rewording is on), how to switch rewording off, how to run the offline check, how to remove the tool, and that other parts of the project live on the `full` branch. For voice mode it SHALL state: when the microphone is open and how that ends, that sound is recognised on the machine and is neither stored nor sent, that the recognised text goes to the Claude Code session and into two log files, and that the microphone also hears other people in the room. The repository SHALL have a `LICENSE` file at its root.
 
 #### Scenario: A reviewer reads the README
 - **WHEN** a reviewer opens the README on `main`

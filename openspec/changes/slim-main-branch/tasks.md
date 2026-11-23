@@ -45,10 +45,10 @@
 
 - [x] 6.1 In a clean copy of the working branch's files (a true clone after the commit): `npm ci`, `npm run build:cli`, `npm test`, speak a phrase in English and in Ukrainian, run `scripts/offline-check.sh`
 - [x] 6.2 In the same clone: `npm audit --omit=dev` reports no high or critical finding
-- [x] 6.3 Search the tree for `parec`, `voice-listen`, `listen(` and `funnel`; nothing is found outside the specs and the README line
+- [x] 6.3 Search the tree for `.listen(`, `funnel`, `claude-voice-fx` and `live.ts`: nothing outside this change's own text; `parec` only in the voice-mode listener
 - [ ] 6.4 Install the built VS Code extension and run the voice test command
 - [x] 6.5 In the fresh clone, with a temporary `CLAUDE_CONFIG_DIR`: run `scripts/install-skills.sh`, check that three skills are installed with the clone's path and none of them mentions `/home/shivers`, then run it with `--remove`
-- [ ] 6.6 Merge the working branch into `main` and push
+- [x] 6.6 Commit the slim version on `main` and push (`3396a1a`, pushed with `full` at `1a1a0f8` on 2026-11-23)
 - [ ] 6.7 Merge `main` into `full` with `git merge -s ours`; check that `full` lost no file; push
 - [ ] 6.8 On this machine, put the checkout on `full` and check that `/adjutant-online` and a spoken notification still work
 - [ ] 6.9 Put the new commit of `main` into the request to the manager, in place of `e719f57`
@@ -56,4 +56,14 @@
 ## 7. Open questions to close
 
 - [ ] 7.1 Get the company's answer on the English voice (research-only data behind its base voice); if the answer is no, find a Piper English voice trained from scratch on openly licensed data
-- [ ] 7.2 Confirm the name of the second branch (`full`) with the owner before task 1.1
+- [x] 7.2 Confirm the name of the second branch (`full`) with the owner (asked on 2026-11-23; the owner then had it pushed under that name)
+
+## 8. Voice mode back on main (decision 11)
+
+- [x] 8.1 Bring back `scripts/voice-listen.py`, `scripts/voice.sh`, `scripts/voice_listen_test.py`, the two voice-mode skills, the spec `voice-mode` and its two archived changes; leave `claude-voice-fx.sh` and `live.ts` on `full`
+- [x] 8.2 Let `scripts/voice.sh` find Python through `VOICE_PYTHON` or `.venv`, and say how to make one
+- [x] 8.3 Add the recognition step to `scripts/offline-check.sh`
+- [x] 8.4 Rewrite the README: what is on the branch, when the microphone is open, where sound and text go, how to set voice mode up, what it adds to the licences
+- [x] 8.5 Run the listener's unit tests, the clean-copy check and the offline check again
+- [ ] 8.6 Rewrite the request to the manager for a `main` that includes voice mode
+- [ ] 8.7 Fix `LICENSE` so GitHub recognises it as MIT (remove the added paragraph about voice models)
