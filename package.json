@@ -9,7 +9,7 @@
     "preview": "vite preview",
     "build:cli": "tsc --noEmit && vite build --config vite.cli.config.ts && vite build --config vite.live.config.ts",
     "build:live": "tsc --noEmit && vite build --config vite.live.config.ts",
-    "build:vscode": "npm run build:cli && node -e \"require('fs').writeFileSync('vscode-extension/default-cli.json', JSON.stringify({ cli: require('path').resolve('dist-cli/say.js') }))\" && (cp ~/.claude/skills/clear-speech/SKILL.md vscode-extension/clear-speech.md 2>/dev/null || echo 'clear-speech skill not found in ~/.claude/skills; packaging the copy already in vscode-extension') && cd vscode-extension && npx --yes @vscode/vsce package --allow-missing-repository --skip-license -o ../adjutant-voice-notify.vsix",
+    "build:vscode": "npm run build:cli && node -e \"require('fs').writeFileSync('vscode-extension/default-cli.json', JSON.stringify({ cli: require('path').resolve('dist-cli/say.js') }))\" && node -e \"const fs=require('fs');fs.writeFileSync('vscode-extension/clear-speech.md',fs.readFileSync('skills/clear-speech/SKILL.md','utf8').split('{{ADJUTANT_ROOT}}').join(process.cwd()))\" && cd vscode-extension && npx --yes @vscode/vsce package --allow-missing-repository --skip-license -o ../adjutant-voice-notify.vsix",
     "build:extension": "tsc --noEmit && vite build --config vite.extension.config.ts && rm -f adjutant-read-aloud.xpi && cd dist-extension && zip -qr ../adjutant-read-aloud.xpi .",
     "test": "vitest run"
   },
